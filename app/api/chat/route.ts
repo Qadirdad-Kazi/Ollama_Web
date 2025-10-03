@@ -13,7 +13,8 @@ export async function POST(req: Request) {
     console.log('OLLAMA_BASE:', OLLAMA_BASE)
     console.log('====================')
 
-    const modelName = model.endsWith(':latest') ? model : `${model}:latest`
+    // Use the model name as-is from the frontend (it already includes the tag)
+    const modelName = model
     console.log('Using model:', modelName)
 
     // Validate messages format

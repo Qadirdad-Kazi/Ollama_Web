@@ -18,16 +18,16 @@ interface OllamaModel {
   name: string
   size: number
   digest: string
-  modified_at: string
 }
 
 export default function ChatPage() {
   const router = useRouter()
   const [sidebarOpen, setSidebarOpen] = useState(true)
-  const [selectedModel, setSelectedModel] = useState<string>("llama3.2")
+  const [selectedModel, setSelectedModel] = useState<string>("")
   const [availableModels, setAvailableModels] = useState<OllamaModel[]>([])
   const [modelsLoading, setModelsLoading] = useState(true)
 
+  const modelTag = selectedModel ? `(${selectedModel})` : ""
   const { messages, input, handleInputChange, handleSubmit, isLoading, setMessages, error } = useChat({
     api: "/api/chat",
     body: {

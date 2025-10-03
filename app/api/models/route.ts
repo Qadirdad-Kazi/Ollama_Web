@@ -42,7 +42,7 @@ export async function GET() {
     
     // Transform the response to match the expected format
     const models = (data.models || []).map((model: OllamaModel) => ({
-      name: model.name.split(':')[0], // Extract just the model name without the tag
+      name: model.name, // Keep full model name including tag
       size: model.size,
       digest: model.digest,
       modified_at: model.modified_at,
