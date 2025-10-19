@@ -20,15 +20,28 @@ interface OllamaModel {
   digest: string
 }
 
+interface ChatHistory {
+  id: string
+  title: string
+  messages: any[]
+  createdAt: Date
+  updatedAt: Date
+}
+
 export default function ChatPage() {
   const router = useRouter()
   const [sidebarOpen, setSidebarOpen] = useState(true)
   const [selectedModel, setSelectedModel] = useState<string>("")
   const [availableModels, setAvailableModels] = useState<OllamaModel[]>([])
   const [modelsLoading, setModelsLoading] = useState(true)
+  const [chatKey, setChatKey] = useState(0)
+  
+  // Chat history management
+  const [chatHistory, setChatHistory] = useState<ChatHistory[]>([])
+  const [currentChatId, setCurrentChatId] = useState<string>("")
 
   const modelTag = selectedModel ? `(${selectedModel})` : ""
-  const { messages, input, handleInputChange, handleSubmit, isLoading, setMessages, error } = useChat({
+  const { messages, input, handleInputChange, handleSubmit, isLoading, setMessages, error, resetChat } = useChat({
     api: "/api/chat",
     body: {
       model: selectedModel,
@@ -65,6 +78,40 @@ export default function ChatPage() {
     }
   }, [error]);
 
+  // Initialize first chat
+  useEffect(() => {
+    if (chatHistory.length === 0 && !currentChatId) {
+      const initialChatId = `chat-${Date.now()}`
+      const initialChat: ChatHistory = {
+        id: initialChatId,
+        title: 'New Chat',
+        messages: [],
+        createdAt: new Date(),
+        updatedAt: new Date()
+      }
+      setChatHistory([initialChat])
+      setCurrentChatId(initialChatId)
+    }
+  }, [chatHistory.length, currentChatId])
+
+  // Update chat title when first message is sent
+  useEffect(() => {
+    if (messages.length === 1 && currentChatId) {
+      const firstMessage = messages[0]
+      if (firstMessage?.role === 'user' && firstMessage?.content) {
+        const chatTitle = firstMessage.content.substring(0, 50) + (firstMessage.content.length > 50 ? '...' : '')
+        
+        setChatHistory(prev => 
+          prev.map(chat => 
+            chat.id === currentChatId 
+              ? { ...chat, title: chatTitle, updatedAt: new Date() }
+              : chat
+          )
+        )
+      }
+    }
+  }, [messages, currentChatId])
+
   // Fetch available models
   useEffect(() => {
     const fetchModels = async () => {
@@ -93,8 +140,101 @@ export default function ChatPage() {
     handleSubmit(e)
   }
 
+  // Save current chat to history before starting new one
+  const saveCurrentChat = () => {
+    if (messages.length > 0 && currentChatId) {
+      const chatTitle = messages[0]?.content?.substring(0, 50) + (messages[0]?.content?.length > 50 ? '...' : '') || 'New Chat'
+      
+      setChatHistory(prev => {
+        const updated = prev.map(chat => 
+          chat.id === currentChatId 
+            ? { ...chat, messages, title: chatTitle, updatedAt: new Date() }
+            : chat
+        )
+        return updated
+      })
+    }
+  }
+
   const handleNewChat = () => {
-    setMessages([])
+    console.log('handleNewChat called')
+    
+    // Save current chat if it has messages
+    saveCurrentChat()
+    
+    // Create new chat
+    const newChatId = `chat-${Date.now()}`
+    const newChat: ChatHistory = {
+      id: newChatId,
+      title: 'New Chat',
+      messages: [],
+      createdAt: new Date(),
+      updatedAt: new Date()
+    }
+    
+    setChatHistory(prev => [newChat, ...prev])
+    setCurrentChatId(newChatId)
+    resetChat()
+    setChatKey(prev => prev + 1)
+    
+    console.log('handleNewChat completed - new chat created:', newChatId)
+  }
+
+  const handleSelectChat = (chatId: string) => {
+    console.log('handleSelectChat called:', chatId)
+    
+    // Save current chat before switching
+    saveCurrentChat()
+    
+    // Find and load selected chat
+    const selectedChat = chatHistory.find(chat => chat.id === chatId)
+    if (selectedChat) {
+      setCurrentChatId(chatId)
+      setMessages(selectedChat.messages)
+      setChatKey(prev => prev + 1)
+      console.log('Chat loaded:', selectedChat.title)
+    }
+  }
+
+  const handleDeleteChat = (chatId: string) => {
+    console.log('handleDeleteChat called:', chatId)
+    
+    // Show confirmation dialog
+    const chatToDelete = chatHistory.find(chat => chat.id === chatId)
+    const chatTitle = chatToDelete?.title || 'this chat'
+    
+    if (window.confirm(`Are you sure you want to delete "${chatTitle}"? This action cannot be undone.`)) {
+      // If deleting the current chat, switch to another chat or create new one
+      if (currentChatId === chatId) {
+        const remainingChats = chatHistory.filter(chat => chat.id !== chatId)
+        
+        if (remainingChats.length > 0) {
+          // Switch to the first remaining chat
+          const nextChat = remainingChats[0]
+          setCurrentChatId(nextChat.id)
+          setMessages(nextChat.messages)
+        } else {
+          // Create a new chat if no chats remain
+          const newChatId = `chat-${Date.now()}`
+          const newChat: ChatHistory = {
+            id: newChatId,
+            title: 'New Chat',
+            messages: [],
+            createdAt: new Date(),
+            updatedAt: new Date()
+          }
+          setCurrentChatId(newChatId)
+          setMessages([])
+          setChatHistory([newChat])
+        }
+      } else {
+        // Just remove the chat from history
+        setChatHistory(prev => prev.filter(chat => chat.id !== chatId))
+      }
+      
+      setChatKey(prev => prev + 1)
+      console.log('Chat deleted:', chatTitle)
+    }
   }
 
   const handleModelChange = (model: string) => {
@@ -115,7 +255,14 @@ export default function ChatPage() {
             transition={{ duration: 0.3, ease: "easeInOut" }}
             className="w-80 border-r border-gray-200 dark:border-gray-700"
           >
-            <Sidebar onClose={() => setSidebarOpen(false)} onNewChat={handleNewChat} />
+            <Sidebar 
+              onClose={() => setSidebarOpen(false)} 
+              onNewChat={handleNewChat}
+              chatHistory={chatHistory}
+              currentChatId={currentChatId}
+              onSelectChat={handleSelectChat}
+              onDeleteChat={handleDeleteChat}
+            />
           </motion.div>
         )}
       </AnimatePresence>
@@ -166,7 +313,7 @@ export default function ChatPage() {
         </div>
 
         {/* Messages Area */}
-        <ScrollArea className="flex-1 px-4">
+        <ScrollArea className="flex-1 px-4" key={chatKey}>
           <div className="max-w-4xl mx-auto py-8">
             {messages.length === 0 ? (
               <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-center py-20">

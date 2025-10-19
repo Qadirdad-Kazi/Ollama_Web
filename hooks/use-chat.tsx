@@ -22,6 +22,9 @@ export function useChat(options: UseChatOptions = {}) {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<Error | null>(null)
 
+	// Track the current streaming request so it can be aborted on reset/new chat
+	const controllerRef = useRef<AbortController | null>(null)
+
   const bodyRef = useRef(body)
   useEffect(() => {
     bodyRef.current = body
@@ -49,10 +52,16 @@ export function useChat(options: UseChatOptions = {}) {
       setError(null)
 
       try {
+        // Abort any in-flight request before starting a new one
+        if (controllerRef.current) {
+          controllerRef.current.abort()
+        }
+        controllerRef.current = new AbortController()
         const res = await fetch(api, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ messages: newMessages, model: bodyRef.current?.model }),
+          signal: controllerRef.current.signal,
         })
 
         onResponse && onResponse(res)
@@ -109,10 +118,25 @@ export function useChat(options: UseChatOptions = {}) {
         ])
       } finally {
         setIsLoading(false)
+        controllerRef.current = null
       }
     },
     [api, input, isLoading, messages, onResponse, onFinish, onError]
   )
+
+  const resetChat = useCallback(() => {
+    console.log('resetChat called - clearing all state')
+    // Abort any active stream and clear state
+    if (controllerRef.current) {
+      controllerRef.current.abort()
+      controllerRef.current = null
+    }
+    setMessages([])
+    setInput("")
+    setError(null)
+    setIsLoading(false)
+    console.log('resetChat completed - state should be cleared')
+  }, [])
 
   return {
     messages,
@@ -122,6 +146,7 @@ export function useChat(options: UseChatOptions = {}) {
     isLoading,
     setMessages,
     error,
+    resetChat,
   }
 }
 
