@@ -109,6 +109,10 @@ export function useChat(options: UseChatOptions = {}) {
 
         onFinish && onFinish(undefined)
       } catch (err: any) {
+        // Ignore abort errors - they're intentional (user canceled or reset chat)
+        if (err.name === 'AbortError') {
+          return
+        }
         const e = err instanceof Error ? err : new Error(String(err))
         setError(e)
         onError && onError(e)
