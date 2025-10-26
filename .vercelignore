@@ -1,0 +1,15 @@
+# Files to ignore during Vercel deployment
+node_modules
+.git
+.env.local
+.env*.local
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.DS_Store
+*.pem
+Demo Images
+public/Demo Images
+README.md
+DEPLOYMENT.md
+

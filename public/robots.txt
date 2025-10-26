@@ -1,0 +1,11 @@
+# Allow all crawlers
+User-agent: *
+Allow: /
+
+# Disallow API routes
+User-agent: *
+Disallow: /api/
+
+# Sitemap (update with your domain)
+Sitemap: https://your-domain.vercel.app/sitemap.xml
+

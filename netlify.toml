@@ -1,0 +1,26 @@
+# Netlify Configuration (Alternative to Vercel)
+# Note: Vercel is recommended for Next.js, but Netlify is also supported
+
+[build]
+  command = "npm run build"
+  publish = ".next"
+
+[build.environment]
+  NODE_VERSION = "18"
+
+[[plugins]]
+  package = "@netlify/plugin-nextjs"
+
+# Redirect all requests to Next.js
+[[redirects]]
+  from = "/*"
+  to = "/.netlify/functions/___netlify-handler"
+  status = 200
+
+[functions]
+  # Increase timeout for AI model responses
+  timeout = 60
+  
+# Environment variables (set these in Netlify dashboard)
+# OLLAMA_BASE_URL = your-ollama-instance-url
+

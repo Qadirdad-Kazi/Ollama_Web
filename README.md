@@ -65,6 +65,8 @@ Before you begin, ensure you have the following installed:
    npm install
    # or
    yarn install
+   # or
+   pnpm install
    ```
 
 3. **Set up environment variables**
@@ -72,15 +74,30 @@ Before you begin, ensure you have the following installed:
    ```env
    OLLAMA_BASE_URL=http://localhost:11434
    ```
+   
+   You can also copy the example file:
+   ```bash
+   cp env.example .env.local
+   ```
 
-4. **Start the development server**
+4. **Make sure Ollama is running**
+   ```bash
+   ollama serve
+   ```
+   
+   Pull a model if you haven't already:
+   ```bash
+   ollama pull llama3.2
+   ```
+
+5. **Start the development server**
    ```bash
    npm run dev
    # or
    yarn dev
    ```
 
-5. **Open your browser and navigate to**
+6. **Open your browser and navigate to**
    ```
    http://localhost:3000
    ```
@@ -162,6 +179,26 @@ To add a new model:
 3. **Connection issues**
    - Verify your internet connection
    - Check if Ollama is running on the correct port (default: 11434)
+
+## 🚀 Deployment
+
+This application is ready to deploy on Vercel (recommended for Next.js apps).
+
+### Quick Deploy to Vercel
+
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/yourusername/ai-chat-app)
+
+### Manual Deployment
+
+For detailed deployment instructions including how to set up a hosted Ollama instance, see [DEPLOYMENT.md](./DEPLOYMENT.md)
+
+**Quick Steps:**
+1. Push your code to GitHub
+2. Import to Vercel at [vercel.com/new](https://vercel.com/new)
+3. Add environment variable: `OLLAMA_BASE_URL` (your hosted Ollama URL)
+4. Deploy!
+
+**Important:** You'll need a hosted Ollama instance for production. See [DEPLOYMENT.md](./DEPLOYMENT.md) for setup instructions.
 
 ## 🤝 Contributing
 
