@@ -12,10 +12,11 @@ type UseChatOptions = {
   onResponse?: (res: Response) => void
   onFinish?: (message?: Message) => void
   onError?: (err: Error) => void
+  mode?: 'local' | 'remote' // New: support local Ollama
 }
 
 export function useChat(options: UseChatOptions = {}) {
-  const { api = "/api/chat", body = {}, onResponse, onFinish, onError } = options
+  const { api = "/api/chat", body = {}, onResponse, onFinish, onError, mode = 'remote' } = options
 
   const [messages, setMessages] = useState<Message[]>([])
   const [input, setInput] = useState("")
@@ -57,10 +58,21 @@ export function useChat(options: UseChatOptions = {}) {
           controllerRef.current.abort()
         }
         controllerRef.current = new AbortController()
-        const res = await fetch(api, {
+        
+        // Use local Ollama directly if in local mode
+        const endpoint = mode === 'local' ? 'http://localhost:11434/api/chat' : api
+        const requestBody = mode === 'local' 
+          ? {
+              model: bodyRef.current?.model || 'llama3.2',
+              messages: newMessages.map(m => ({ role: m.role, content: m.content })),
+              stream: true,
+            }
+          : { messages: newMessages, model: bodyRef.current?.model }
+        
+        const res = await fetch(endpoint, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ messages: newMessages, model: bodyRef.current?.model }),
+          body: JSON.stringify(requestBody),
           signal: controllerRef.current.signal,
         })
 
@@ -88,22 +100,55 @@ export function useChat(options: UseChatOptions = {}) {
         }
 
         let done = false
+        let buffer = ''
+        
         while (!done) {
           const { value, done: readerDone } = await reader.read()
           done = !!readerDone
           if (value) {
-            const chunk = decoder.decode(value)
-            setMessages((prev) => {
-              // append chunk to the last assistant message
-              const copy = [...prev]
-              const lastIndex = copy.map((m) => m.role).lastIndexOf("assistant")
-              if (lastIndex !== -1) {
-                copy[lastIndex] = { ...copy[lastIndex], content: copy[lastIndex].content + chunk }
-              } else {
-                copy.push({ id: `assistant-${Date.now()}`, role: "assistant", content: chunk })
+            const chunk = decoder.decode(value, { stream: true })
+            
+            // Local mode returns JSON lines, remote returns plain text
+            if (mode === 'local') {
+              buffer += chunk
+              const lines = buffer.split('\n')
+              buffer = lines.pop() || ''
+              
+              for (const line of lines) {
+                const trimmed = line.trim()
+                if (!trimmed) continue
+                try {
+                  const obj = JSON.parse(trimmed)
+                  if (obj?.message?.content) {
+                    const content = obj.message.content
+                    setMessages((prev) => {
+                      const copy = [...prev]
+                      const lastIndex = copy.map((m) => m.role).lastIndexOf("assistant")
+                      if (lastIndex !== -1) {
+                        copy[lastIndex] = { ...copy[lastIndex], content: copy[lastIndex].content + content }
+                      } else {
+                        copy.push({ id: `assistant-${Date.now()}`, role: "assistant", content })
+                      }
+                      return copy
+                    })
+                  }
+                } catch (e) {
+                  // Ignore parse errors
+                }
               }
-              return copy
-            })
+            } else {
+              // Remote mode - plain text chunks
+              setMessages((prev) => {
+                const copy = [...prev]
+                const lastIndex = copy.map((m) => m.role).lastIndexOf("assistant")
+                if (lastIndex !== -1) {
+                  copy[lastIndex] = { ...copy[lastIndex], content: copy[lastIndex].content + chunk }
+                } else {
+                  copy.push({ id: `assistant-${Date.now()}`, role: "assistant", content: chunk })
+                }
+                return copy
+              })
+            }
           }
         }
 
@@ -125,7 +170,7 @@ export function useChat(options: UseChatOptions = {}) {
         controllerRef.current = null
       }
     },
-    [api, input, isLoading, messages, onResponse, onFinish, onError]
+    [api, input, isLoading, messages, onResponse, onFinish, onError, mode]
   )
 
   const resetChat = useCallback(() => {
