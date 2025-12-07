@@ -2,9 +2,9 @@ import mongoose from 'mongoose';
 
 const MONGODB_URI = process.env.MONGODB_URI;
 
-if (!MONGODB_URI) {
-    throw new Error('Please define the MONGODB_URI environment variable inside .env.local');
-}
+// Only throw if we are actually trying to connect, or if we are in a runtime environment
+// During build time, this might be missing, so we shouldn't throw immediately at top level.
+
 
 interface MongooseCache {
     conn: typeof mongoose | null;
@@ -27,11 +27,15 @@ async function connectDB() {
     }
 
     if (!cached.promise) {
+        if (!MONGODB_URI) {
+            throw new Error('Please define the MONGODB_URI environment variable inside .env.local');
+        }
+
         const opts = {
             bufferCommands: false,
         };
 
-        cached.promise = mongoose.connect(MONGODB_URI!, opts).then((mongoose) => {
+        cached.promise = mongoose.connect(MONGODB_URI, opts).then((mongoose) => {
             return mongoose;
         });
     }

@@ -391,7 +391,7 @@ export default function ChatPage() {
                 </Button>
               </div>
             </form>
-            <p className="text-xs text-gray-500 dark:text-gray-400 text-center mt-2">
+            <div className="text-xs text-gray-500 dark:text-gray-400 text-center mt-2">
               {availableModels.length === 0 ? (
                 <div className="flex flex-col items-center gap-2">
                   <span>No models available. Please check your Ollama installation.</span>
@@ -400,7 +400,7 @@ export default function ChatPage() {
               ) : (
                 "AI can make mistakes. Consider checking important information."
               )}
-            </p>
+            </div>
           </div>
         </div>
       </div>
