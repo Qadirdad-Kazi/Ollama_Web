@@ -48,10 +48,38 @@ export function SetupGuide() {
                         <div className="space-y-2">
                             <h3 className="font-medium flex items-center gap-2">
                                 <Terminal className="w-4 h-4" />
-                                Step 1: Run the registration script
+                                Step 1: Expose your Local Ollama
                             </h3>
                             <p className="text-sm text-muted-foreground">
-                                Run this command in your terminal. It downloads the registration script and runs it.
+                                You need to make your local Ollama instance accessible to the internet. We recommend using <strong>ngrok</strong>.
+                            </p>
+                            <ol className="list-decimal list-inside text-sm text-muted-foreground space-y-2 ml-2">
+                                <li>
+                                    <a href="https://dashboard.ngrok.com/signup" target="_blank" className="underline text-primary">Sign up for ngrok</a> and get your Authtoken.
+                                </li>
+                                <li>
+                                    Run this command in your terminal (replace <code>YOUR_TOKEN</code>):
+                                    <div className="bg-slate-950 text-slate-50 p-2 rounded-md font-mono text-xs mt-1">
+                                        <code>ngrok config add-authtoken YOUR_TOKEN</code>
+                                    </div>
+                                </li>
+                                <li>
+                                    Start the tunnel:
+                                    <div className="bg-slate-950 text-slate-50 p-2 rounded-md font-mono text-xs mt-1">
+                                        <code>ngrok http 11434</code>
+                                    </div>
+                                </li>
+                                <li>Copy the "Forwarding" URL (e.g., <code>https://xxxx.ngrok-free.app</code>).</li>
+                            </ol>
+                        </div>
+
+                        <div className="space-y-2">
+                            <h3 className="font-medium flex items-center gap-2">
+                                <Terminal className="w-4 h-4" />
+                                Step 2: Run the registration script
+                            </h3>
+                            <p className="text-sm text-muted-foreground">
+                                Open a <strong>new terminal tab</strong> and run this command:
                             </p>
                             <div className="bg-slate-950 text-slate-50 p-3 rounded-md font-mono text-sm flex items-center justify-between">
                                 <code>curl -sL {typeof window !== 'undefined' ? window.location.origin : ''}/register-models.js | node</code>
@@ -63,17 +91,14 @@ export function SetupGuide() {
                                     {copied ? <Check className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
                                 </Button>
                             </div>
-                            <p className="text-xs text-muted-foreground mt-2">
-                                Note: You need Node.js installed on your machine.
-                            </p>
                         </div>
 
                         <div className="space-y-2">
-                            <h3 className="font-medium">Step 2: Follow the prompts</h3>
-                            <ul className="list-disc list-inside text-sm text-muted-foreground space-y-1">
-                                <li>Enter your Web App URL (e.g., the URL of this website)</li>
-                                <li>Enter your Public URL (e.g., your ngrok URL)</li>
-                                <li>(Optional) Enter your Model API Key</li>
+                            <h3 className="font-medium">Step 3: Follow the prompts</h3>
+                            <ul className="list-disc list-inside text-sm text-muted-foreground space-y-1 ml-2">
+                                <li><strong>Web App URL:</strong> Enter <code>{typeof window !== 'undefined' ? window.location.origin : '...'}</code></li>
+                                <li><strong>Public URL:</strong> Enter your ngrok URL from Step 1.</li>
+                                <li><strong>API Key:</strong> Enter your OLLAMA_API_KEY (if you set one).</li>
                             </ul>
                         </div>
                     </TabsContent>
