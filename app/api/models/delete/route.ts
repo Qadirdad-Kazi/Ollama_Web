@@ -10,23 +10,14 @@ export async function DELETE(req: Request) {
 
     // 1. Try to delete from registered models first
     try {
-      const fs = await import('fs/promises');
-      const path = await import('path');
-      const dataFile = path.join(process.cwd(), 'data', 'registered-models.json');
+      const { getRegisteredModels, saveRegisteredModels } = await import('@/lib/storage');
+      const registeredModels = await getRegisteredModels();
 
-      let registeredModels = [];
-      try {
-        const fileContent = await fs.readFile(dataFile, 'utf-8');
-        registeredModels = JSON.parse(fileContent);
-      } catch (e) {
-        // File doesn't exist
-      }
-
-      const newModels = registeredModels.filter((m: any) => m.name !== model);
+      const newModels = registeredModels.filter((m) => m.name !== model);
 
       if (newModels.length < registeredModels.length) {
         // It was a registered model
-        await fs.writeFile(dataFile, JSON.stringify(newModels, null, 2));
+        await saveRegisteredModels(newModels);
         return Response.json({ success: true, message: `Registered model ${model} deleted successfully` });
       }
     } catch (e) {

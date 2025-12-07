@@ -1,7 +1,4 @@
-import { promises as fs } from 'fs';
-import path from 'path';
-
-const DATA_FILE = path.join(process.cwd(), 'data', 'registered-models.json');
+import { getRegisteredModels, saveRegisteredModels, RegisteredModel } from '@/lib/storage';
 
 export async function POST(req: Request) {
     try {
@@ -18,17 +15,10 @@ export async function POST(req: Request) {
         }
 
         // Read existing data
-        let registeredModels: any[] = [];
-        try {
-            const fileContent = await fs.readFile(DATA_FILE, 'utf-8');
-            registeredModels = JSON.parse(fileContent);
-        } catch (error) {
-            // File might not exist yet, which is fine
-        }
+        let registeredModels = await getRegisteredModels();
 
         // Merge/Update models
-        // We'll add a 'source' field to distinguish them and 'baseUrl' to know where to call
-        const newModels = models.map((m: any) => ({
+        const newModels: RegisteredModel[] = models.map((m: any) => ({
             ...m,
             source: 'remote',
             baseUrl: url || null, // The URL where this model is hosted
@@ -38,13 +28,13 @@ export async function POST(req: Request) {
 
         // Filter out old models from the same URL if updating
         if (url) {
-            registeredModels = registeredModels.filter((m: any) => m.baseUrl !== url);
+            registeredModels = registeredModels.filter((m) => m.baseUrl !== url);
         }
 
         registeredModels = [...registeredModels, ...newModels];
 
-        // Write back to file
-        await fs.writeFile(DATA_FILE, JSON.stringify(registeredModels, null, 2));
+        // Write back
+        await saveRegisteredModels(registeredModels);
 
         return Response.json({ success: true, count: newModels.length });
     } catch (error) {

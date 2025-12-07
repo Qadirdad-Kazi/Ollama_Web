@@ -1,18 +1,10 @@
-import { promises as fs } from 'fs';
-import path from 'path';
 
-const DATA_FILE = path.join(process.cwd(), 'data', 'registered-models.json');
+import { getRegisteredModels, saveRegisteredModels, RegisteredModel } from '@/lib/storage';
 
 export async function POST() {
     try {
         // 1. Read registered models
-        let registeredModels: any[] = [];
-        try {
-            const fileContent = await fs.readFile(DATA_FILE, 'utf-8');
-            registeredModels = JSON.parse(fileContent);
-        } catch (error) {
-            return Response.json({ models: [] });
-        }
+        const registeredModels = await getRegisteredModels();
 
         if (registeredModels.length === 0) {
             return Response.json({ models: [] });
@@ -32,10 +24,10 @@ export async function POST() {
                 const modelWithKey = registeredModels.find(m => m.baseUrl === url && m.apiKey);
                 const headers: Record<string, string> = {};
                 if (modelWithKey?.apiKey) {
-                    headers['Authorization'] = `Bearer ${modelWithKey.apiKey}`;
+                    headers['Authorization'] = `Bearer ${modelWithKey.apiKey} `;
                 }
 
-                const response = await fetch(`${url}/api/tags`, {
+                const response = await fetch(`${url} /api/tags`, {
                     method: 'GET',
                     headers,
                     signal: controller.signal
@@ -49,19 +41,19 @@ export async function POST() {
         }));
 
         // 4. Update models with new status
-        const updatedModels = registeredModels.map(m => {
+        const updatedModels: RegisteredModel[] = registeredModels.map(m => {
             if (m.source === 'remote' && m.baseUrl) {
                 return {
                     ...m,
-                    status: urlStatus[m.baseUrl] ? 'online' : 'offline',
+                    status: (urlStatus[m.baseUrl] ? 'online' : 'offline') as 'online' | 'offline',
                     lastChecked: new Date().toISOString()
                 };
             }
             return m;
         });
 
-        // 5. Save back to file
-        await fs.writeFile(DATA_FILE, JSON.stringify(updatedModels, null, 2));
+        // 5. Save back
+        await saveRegisteredModels(updatedModels);
 
         return Response.json({
             success: true,
@@ -73,3 +65,4 @@ export async function POST() {
         return Response.json({ error: 'Failed to check model health' }, { status: 500 });
     }
 }
+
