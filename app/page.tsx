@@ -13,6 +13,7 @@ import { motion, AnimatePresence } from "framer-motion"
 import Sidebar from "@/components/sidebar"
 import MessageBubble from "@/components/message-bubble"
 import TypingIndicator from "@/components/typing-indicator"
+import { SetupGuide } from "@/components/setup-guide"
 
 interface OllamaModel {
   name: string
@@ -35,7 +36,7 @@ export default function ChatPage() {
   const [availableModels, setAvailableModels] = useState<OllamaModel[]>([])
   const [modelsLoading, setModelsLoading] = useState(true)
   const [chatKey, setChatKey] = useState(0)
-  
+
   // Chat history management
   const [chatHistory, setChatHistory] = useState<ChatHistory[]>([])
   const [currentChatId, setCurrentChatId] = useState<string>("")
@@ -65,12 +66,12 @@ export default function ChatPage() {
       }]);
     },
   });
-  
+
   // Debug: Log messages when they change
   useEffect(() => {
     console.log('Messages updated:', messages);
   }, [messages]);
-  
+
   // Log any errors
   useEffect(() => {
     if (error) {
@@ -100,10 +101,10 @@ export default function ChatPage() {
       const firstMessage = messages[0]
       if (firstMessage?.role === 'user' && firstMessage?.content) {
         const chatTitle = firstMessage.content.substring(0, 50) + (firstMessage.content.length > 50 ? '...' : '')
-        
-        setChatHistory(prev => 
-          prev.map(chat => 
-            chat.id === currentChatId 
+
+        setChatHistory(prev =>
+          prev.map(chat =>
+            chat.id === currentChatId
               ? { ...chat, title: chatTitle, updatedAt: new Date() }
               : chat
           )
@@ -144,10 +145,10 @@ export default function ChatPage() {
   const saveCurrentChat = () => {
     if (messages.length > 0 && currentChatId) {
       const chatTitle = messages[0]?.content?.substring(0, 50) + (messages[0]?.content?.length > 50 ? '...' : '') || 'New Chat'
-      
+
       setChatHistory(prev => {
-        const updated = prev.map(chat => 
-          chat.id === currentChatId 
+        const updated = prev.map(chat =>
+          chat.id === currentChatId
             ? { ...chat, messages, title: chatTitle, updatedAt: new Date() }
             : chat
         )
@@ -158,10 +159,10 @@ export default function ChatPage() {
 
   const handleNewChat = () => {
     console.log('handleNewChat called')
-    
+
     // Save current chat if it has messages
     saveCurrentChat()
-    
+
     // Create new chat
     const newChatId = `chat-${Date.now()}`
     const newChat: ChatHistory = {
@@ -171,21 +172,21 @@ export default function ChatPage() {
       createdAt: new Date(),
       updatedAt: new Date()
     }
-    
+
     setChatHistory(prev => [newChat, ...prev])
     setCurrentChatId(newChatId)
     resetChat()
     setChatKey(prev => prev + 1)
-    
+
     console.log('handleNewChat completed - new chat created:', newChatId)
   }
 
   const handleSelectChat = (chatId: string) => {
     console.log('handleSelectChat called:', chatId)
-    
+
     // Save current chat before switching
     saveCurrentChat()
-    
+
     // Find and load selected chat
     const selectedChat = chatHistory.find(chat => chat.id === chatId)
     if (selectedChat) {
@@ -198,16 +199,16 @@ export default function ChatPage() {
 
   const handleDeleteChat = (chatId: string) => {
     console.log('handleDeleteChat called:', chatId)
-    
+
     // Show confirmation dialog
     const chatToDelete = chatHistory.find(chat => chat.id === chatId)
     const chatTitle = chatToDelete?.title || 'this chat'
-    
+
     if (window.confirm(`Are you sure you want to delete "${chatTitle}"? This action cannot be undone.`)) {
       // If deleting the current chat, switch to another chat or create new one
       if (currentChatId === chatId) {
         const remainingChats = chatHistory.filter(chat => chat.id !== chatId)
-        
+
         if (remainingChats.length > 0) {
           // Switch to the first remaining chat
           const nextChat = remainingChats[0]
@@ -231,7 +232,7 @@ export default function ChatPage() {
         // Just remove the chat from history
         setChatHistory(prev => prev.filter(chat => chat.id !== chatId))
       }
-      
+
       setChatKey(prev => prev + 1)
       console.log('Chat deleted:', chatTitle)
     }
@@ -255,8 +256,8 @@ export default function ChatPage() {
             transition={{ duration: 0.3, ease: "easeInOut" }}
             className="w-80 border-r border-gray-200 dark:border-gray-700"
           >
-            <Sidebar 
-              onClose={() => setSidebarOpen(false)} 
+            <Sidebar
+              onClose={() => setSidebarOpen(false)}
               onNewChat={handleNewChat}
               chatHistory={chatHistory}
               currentChatId={currentChatId}
@@ -306,6 +307,7 @@ export default function ChatPage() {
               </SelectContent>
             </Select>
 
+            <SetupGuide />
             <Button variant="ghost" size="sm" onClick={() => router.push("/settings")}>
               <Settings className="w-4 h-4" />
             </Button>
@@ -390,9 +392,14 @@ export default function ChatPage() {
               </div>
             </form>
             <p className="text-xs text-gray-500 dark:text-gray-400 text-center mt-2">
-              {availableModels.length === 0
-                ? "No models available. Please check your Ollama installation."
-                : "AI can make mistakes. Consider checking important information."}
+              {availableModels.length === 0 ? (
+                <div className="flex flex-col items-center gap-2">
+                  <span>No models available. Please check your Ollama installation.</span>
+                  <SetupGuide />
+                </div>
+              ) : (
+                "AI can make mistakes. Consider checking important information."
+              )}
             </p>
           </div>
         </div>

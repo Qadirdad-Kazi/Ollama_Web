@@ -16,16 +16,22 @@ import {
   Loader2,
   AlertCircle,
   CheckCircle,
+  Globe,
 } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { motion } from "framer-motion"
 import { ThemeToggle } from "@/components/theme-toggle"
+import { SetupGuide } from "@/components/setup-guide"
 
 interface OllamaModel {
   name: string
   size: number
   digest: string
   modified_at: string
+  source?: 'remote' | 'local'
+  baseUrl?: string
+  status?: 'online' | 'offline'
+  lastChecked?: string
 }
 
 interface SystemInfo {
@@ -126,8 +132,22 @@ export default function SettingsPage() {
     }
   }
 
+  const checkHealth = async () => {
+    try {
+      const response = await fetch("/api/models/check", { method: "POST" })
+      if (response.ok) {
+        fetchModels() // Reload models to get updated status
+      }
+    } catch (error) {
+      console.error("Health check failed:", error)
+    }
+  }
+
   useEffect(() => {
-    fetchModels()
+    fetchModels().then(() => {
+      // Run health check after initial load
+      checkHealth()
+    })
   }, [])
 
   const formatSize = (bytes: number) => {
@@ -148,6 +168,9 @@ export default function SettingsPage() {
           <div>
             <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-2">Settings</h1>
             <p className="text-gray-600 dark:text-gray-400">Manage your Ollama models and configuration</p>
+          </div>
+          <div className="ml-auto">
+            <SetupGuide />
           </div>
         </div>
 
@@ -267,6 +290,93 @@ export default function SettingsPage() {
             </CardContent>
           </Card>
 
+          {/* Register External Model */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Globe className="w-5 h-5" />
+                Register External Model
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <p className="text-sm text-gray-500">
+                  Manually add a model hosted on another server or via ngrok.
+                </p>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="reg-name-input">Model Name</Label>
+                    <Input
+                      id="reg-name-input"
+                      placeholder="e.g. my-custom-model"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="reg-url-input">Base URL</Label>
+                    <Input
+                      id="reg-url-input"
+                      placeholder="e.g. https://my-api.ngrok.io"
+                    />
+                  </div>
+                  <div className="md:col-span-2">
+                    <Label htmlFor="reg-key-input">API Key (Optional)</Label>
+                    <Input
+                      id="reg-key-input"
+                      type="password"
+                      placeholder="e.g. sk-..."
+                    />
+                  </div>
+                </div>
+                <Button
+                  onClick={async () => {
+                    const nameInput = document.getElementById('reg-name-input') as HTMLInputElement;
+                    const urlInput = document.getElementById('reg-url-input') as HTMLInputElement;
+                    const keyInput = document.getElementById('reg-key-input') as HTMLInputElement;
+                    const name = nameInput.value.trim();
+                    const url = urlInput.value.trim();
+                    const apiKey = keyInput.value.trim();
+
+                    if (!name || !url) {
+                      alert('Please enter both name and URL');
+                      return;
+                    }
+
+                    try {
+                      const response = await fetch('/api/models/register', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                          models: [{
+                            name: name,
+                            size: 0,
+                            digest: 'manual-' + Date.now(),
+                            modified_at: new Date().toISOString()
+                          }],
+                          url: url,
+                          apiKey: apiKey
+                        })
+                      });
+
+                      if (response.ok) {
+                        nameInput.value = '';
+                        urlInput.value = '';
+                        keyInput.value = '';
+                        fetchModels();
+                        alert('Model registered successfully!');
+                      } else {
+                        alert('Failed to register model');
+                      }
+                    } catch (e) {
+                      alert('Error registering model');
+                    }
+                  }}
+                >
+                  Register Model
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+
           {/* Installed Models */}
           <Card>
             <CardHeader>
@@ -275,10 +385,16 @@ export default function SettingsPage() {
                   <Settings className="w-5 h-5" />
                   Installed Models ({models.length})
                 </CardTitle>
-                <Button variant="outline" onClick={fetchModels} disabled={loading}>
-                  <RefreshCw className={`w-4 h-4 mr-2 ${loading ? "animate-spin" : ""}`} />
-                  Refresh
-                </Button>
+                <div className="flex gap-2">
+                  <Button variant="outline" onClick={checkHealth} disabled={loading}>
+                    <div className="w-2 h-2 rounded-full bg-green-500 mr-2" />
+                    Check Status
+                  </Button>
+                  <Button variant="outline" onClick={fetchModels} disabled={loading}>
+                    <RefreshCw className={`w-4 h-4 mr-2 ${loading ? "animate-spin" : ""}`} />
+                    Refresh
+                  </Button>
+                </div>
               </div>
             </CardHeader>
             <CardContent>
@@ -309,9 +425,29 @@ export default function SettingsPage() {
                         <div className="text-sm text-gray-500 space-y-1">
                           <p>Modified: {new Date(model.modified_at).toLocaleDateString()}</p>
                           <p className="font-mono text-xs">Digest: {model.digest.substring(0, 16)}...</p>
+                          {model.source === 'remote' && (
+                            <div className="flex flex-col gap-1 mt-1">
+                              <div className="flex items-center gap-2 text-xs text-blue-600 dark:text-blue-400">
+                                <Globe className="w-3 h-3" />
+                                <span>Remote: {model.baseUrl}</span>
+                              </div>
+                              {model.status && (
+                                <div className={`flex items-center gap-2 text-xs ${model.status === 'online' ? 'text-green-600' : 'text-red-600'}`}>
+                                  <div className={`w-2 h-2 rounded-full ${model.status === 'online' ? 'bg-green-500' : 'bg-red-500'}`} />
+                                  <span className="capitalize">{model.status}</span>
+                                  {model.lastChecked && <span className="text-gray-400">({new Date(model.lastChecked).toLocaleTimeString()})</span>}
+                                </div>
+                              )}
+                            </div>
+                          )}
                         </div>
                       </div>
                       <div className="flex gap-2">
+                        {model.source === 'remote' && (
+                          <Badge variant="outline" className="mr-2 border-blue-200 text-blue-700 bg-blue-50 dark:bg-blue-900/20 dark:text-blue-300 dark:border-blue-800">
+                            Remote
+                          </Badge>
+                        )}
                         <Button
                           variant="outline"
                           size="sm"

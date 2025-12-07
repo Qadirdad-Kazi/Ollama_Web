@@ -164,6 +164,21 @@ To add a new model:
 - `POST /api/chat` - Send a message to the AI and get a streaming response
 - `GET /api/models` - List all available Ollama models
 
+## 🔧 Advanced: Custom Local API
+
+If you want to use models that are not supported by Ollama directly, or if you want to add custom logic to your model inference, you can set up a custom local API using Python.
+
+We provide a template for this in `scripts/python-api-example`.
+
+1. Navigate to the example directory:
+   ```bash
+   cd scripts/python-api-example
+   ```
+
+2. Follow the instructions in the `README.md` there to set up your custom API.
+
+3. Point this web app to your custom API by updating `OLLAMA_BASE_URL` in `.env.local`.
+
 ## 🐛 Troubleshooting
 
 ### Common Issues

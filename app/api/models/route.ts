@@ -17,7 +17,7 @@ interface OllamaModel {
 export async function GET() {
   try {
     const ollamaBaseUrl = process.env.OLLAMA_BASE_URL?.replace(/\/$/, '') || "http://localhost:11434"
-    
+
     // Get models
     console.log(`Fetching models from: ${ollamaBaseUrl}/api/tags`)
     const response = await fetch(`${ollamaBaseUrl}/api/tags`, {
@@ -39,7 +39,7 @@ export async function GET() {
 
     const data = await response.json()
     console.log('Ollama API response:', JSON.stringify(data, null, 2))
-    
+
     // Transform the response to match the expected format
     const models = (data.models || []).map((model: OllamaModel) => ({
       name: model.name, // Keep full model name including tag
@@ -61,8 +61,23 @@ export async function GET() {
       console.warn('Could not fetch Ollama version:', e)
     }
 
+    // Load registered models from file
+    let registeredModels = [];
+    try {
+      const fs = await import('fs/promises');
+      const path = await import('path');
+      const dataFile = path.join(process.cwd(), 'data', 'registered-models.json');
+      const fileContent = await fs.readFile(dataFile, 'utf-8');
+      registeredModels = JSON.parse(fileContent);
+    } catch (e) {
+      // Ignore if file doesn't exist
+    }
+
+    // Merge models
+    const allModels = [...models, ...registeredModels];
+
     return Response.json({
-      models,
+      models: allModels,
       version,
       baseUrl: ollamaBaseUrl,
       status: "connected",

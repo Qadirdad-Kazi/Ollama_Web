@@ -1,11 +1,11 @@
 const OLLAMA_BASE = process.env.OLLAMA_BASE_URL?.replace(/\/$/, '') || "http://localhost:11434"
 
-export const runtime = 'edge';
+// export const runtime = 'edge'; // Switch to Node.js runtime to support file system access
 
 export async function POST(req: Request) {
   try {
     const { messages, model = "llama3.2" } = await req.json()
-    
+
     console.log('=== Chat Request ===')
     console.log('Model:', model)
     console.log('Message count:', messages.length)
@@ -22,15 +22,47 @@ export async function POST(req: Request) {
       throw new Error('Invalid messages format. Expected an array of { role, content } objects.');
     }
 
+    // Determine the target URL
+    let targetUrl = OLLAMA_BASE;
+    let targetKey = process.env.OLLAMA_API_KEY;
+
     try {
-      console.log('Calling Ollama /api/chat endpoint directly')
+      const fs = await import('fs/promises');
+      const path = await import('path');
+      const dataFile = path.join(process.cwd(), 'data', 'registered-models.json');
+      const fileContent = await fs.readFile(dataFile, 'utf-8');
+      const registeredModels = JSON.parse(fileContent);
+
+      const registeredModel = registeredModels.find((m: any) => m.name === modelName);
+      if (registeredModel && registeredModel.baseUrl) {
+        targetUrl = registeredModel.baseUrl.replace(/\/$/, '');
+        console.log('Routing to registered model URL:', targetUrl);
+
+        // Use the model-specific API Key if available
+        if (registeredModel.apiKey) {
+          targetKey = registeredModel.apiKey;
+        }
+      }
+    } catch (e) {
+      // Ignore errors (file not found, etc) and use default
+    }
+
+    try {
+      console.log('Calling Ollama /api/chat endpoint directly at', targetUrl)
 
       // Use Ollama's chat API directly
-      const ollamaResp = await fetch(`${OLLAMA_BASE}/api/chat`, {
+      const headers: Record<string, string> = {
+        'Content-Type': 'application/json',
+      }
+
+      // Add API Key if present
+      if (targetKey) {
+        headers['Authorization'] = `Bearer ${targetKey}`
+      }
+
+      const ollamaResp = await fetch(`${targetUrl}/api/chat`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers,
         body: JSON.stringify({
           model: modelName,
           messages: messages.map((m: any) => ({
@@ -117,7 +149,7 @@ export async function POST(req: Request) {
       console.error('Ollama API error:', streamError)
       throw new Error(`Failed to stream response: ${streamError instanceof Error ? streamError.message : 'Unknown error'}`)
     }
-    
+
   } catch (error) {
     console.error("=== Chat API Error ===")
     console.error('Error details:', error)
@@ -127,14 +159,14 @@ export async function POST(req: Request) {
       console.error('Error stack:', error.stack)
     }
     console.error("======================")
-    
+
     return new Response(
       JSON.stringify({
         error: `Failed to process chat request: ${error instanceof Error ? error.message : 'Unknown error'}`,
       }),
       {
         status: 500,
-        headers: { 
+        headers: {
           'Content-Type': 'application/json',
           'Access-Control-Allow-Origin': '*',
           'Access-Control-Allow-Methods': 'POST, OPTIONS',

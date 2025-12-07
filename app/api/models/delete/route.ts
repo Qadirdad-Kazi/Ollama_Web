@@ -8,6 +8,32 @@ export async function DELETE(req: Request) {
 
     const ollamaBaseUrl = process.env.OLLAMA_BASE_URL || "http://localhost:11434"
 
+    // 1. Try to delete from registered models first
+    try {
+      const fs = await import('fs/promises');
+      const path = await import('path');
+      const dataFile = path.join(process.cwd(), 'data', 'registered-models.json');
+
+      let registeredModels = [];
+      try {
+        const fileContent = await fs.readFile(dataFile, 'utf-8');
+        registeredModels = JSON.parse(fileContent);
+      } catch (e) {
+        // File doesn't exist
+      }
+
+      const newModels = registeredModels.filter((m: any) => m.name !== model);
+
+      if (newModels.length < registeredModels.length) {
+        // It was a registered model
+        await fs.writeFile(dataFile, JSON.stringify(newModels, null, 2));
+        return Response.json({ success: true, message: `Registered model ${model} deleted successfully` });
+      }
+    } catch (e) {
+      console.error('Error checking registered models:', e);
+    }
+
+    // 2. If not found in registered models, try Ollama
     const response = await fetch(`${ollamaBaseUrl}/api/delete`, {
       method: "DELETE",
       headers: {
