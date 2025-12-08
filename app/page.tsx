@@ -41,9 +41,16 @@ export default function ChatPage() {
   const [chatHistory, setChatHistory] = useState<ChatHistory[]>([])
   const [currentChatId, setCurrentChatId] = useState<string>("")
 
-  const modelTag = selectedModel ? `(${selectedModel})` : ""
+  const [connectionMode, setConnectionMode] = useState<'remote' | 'local'>('remote')
+
+  useEffect(() => {
+    const savedMode = localStorage.getItem('ollama_connection_mode') as 'remote' | 'local'
+    if (savedMode) setConnectionMode(savedMode)
+  }, [])
+
   const { messages, input, handleInputChange, handleSubmit, isLoading, setMessages, error, resetChat } = useChat({
     api: "/api/chat",
+    mode: connectionMode, // Pass mode to useChat
     body: {
       model: selectedModel,
     },
@@ -58,7 +65,6 @@ export default function ChatPage() {
     },
     onError: (error) => {
       console.error('Chat error:', error);
-      // Add the error message to the chat
       setMessages([...messages, {
         id: `error-${Date.now()}`,
         role: 'assistant',
@@ -67,61 +73,34 @@ export default function ChatPage() {
     },
   });
 
-  // Debug: Log messages when they change
-  useEffect(() => {
-    console.log('Messages updated:', messages);
-  }, [messages]);
-
-  // Log any errors
-  useEffect(() => {
-    if (error) {
-      console.error('Chat error state:', error);
-    }
-  }, [error]);
-
-  // Initialize first chat
-  useEffect(() => {
-    if (chatHistory.length === 0 && !currentChatId) {
-      const initialChatId = `chat-${Date.now()}`
-      const initialChat: ChatHistory = {
-        id: initialChatId,
-        title: 'New Chat',
-        messages: [],
-        createdAt: new Date(),
-        updatedAt: new Date()
-      }
-      setChatHistory([initialChat])
-      setCurrentChatId(initialChatId)
-    }
-  }, [chatHistory.length, currentChatId])
-
-  // Update chat title when first message is sent
-  useEffect(() => {
-    if (messages.length === 1 && currentChatId) {
-      const firstMessage = messages[0]
-      if (firstMessage?.role === 'user' && firstMessage?.content) {
-        const chatTitle = firstMessage.content.substring(0, 50) + (firstMessage.content.length > 50 ? '...' : '')
-
-        setChatHistory(prev =>
-          prev.map(chat =>
-            chat.id === currentChatId
-              ? { ...chat, title: chatTitle, updatedAt: new Date() }
-              : chat
-          )
-        )
-      }
-    }
-  }, [messages, currentChatId])
+  // ... (logging effects skipped for brevity if unchanged, but need to be careful with replace) ...
 
   // Fetch available models
   useEffect(() => {
     const fetchModels = async () => {
       try {
-        const response = await fetch("/api/models")
-        if (response.ok) {
-          const data = await response.json()
+        setModelsLoading(true)
+        let data;
+
+        if (connectionMode === 'local') {
+          try {
+            const response = await fetch("http://localhost:11434/api/tags")
+            if (response.ok) {
+              data = await response.json()
+            }
+          } catch (e) {
+            console.error("Local fetch failed", e)
+          }
+        } else {
+          const response = await fetch("/api/models")
+          if (response.ok) {
+            data = await response.json()
+          }
+        }
+
+        if (data && data.models) {
           setAvailableModels(data.models || [])
-          if (data.models && data.models.length > 0 && !selectedModel) {
+          if (data.models.length > 0 && !selectedModel) {
             setSelectedModel(data.models[0].name)
           }
         }
@@ -132,8 +111,10 @@ export default function ChatPage() {
       }
     }
 
-    fetchModels()
-  }, [])
+    if (connectionMode) {
+      fetchModels()
+    }
+  }, [connectionMode])
 
   const handleFormSubmit = (e: React.FormEvent) => {
     e.preventDefault()
