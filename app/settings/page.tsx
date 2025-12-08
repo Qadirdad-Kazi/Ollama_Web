@@ -81,8 +81,18 @@ export default function SettingsPage() {
             })
             return; // Exit early for local mode
           }
-        } catch (e) {
+        } catch (e: any) {
           console.error("Local fetch failed", e)
+          setSystemInfo({
+            version: "Unknown",
+            status: "disconnected",
+            baseUrl: "http://localhost:11434"
+          })
+          // If mixed content or network error, it might be the browser blocking it.
+          // We can try to alert the user or just let the UI show "disconnected".
+          if (e.name === 'TypeError' && e.message === 'Failed to fetch') {
+            // This is often CORS or Mixed Content
+          }
         }
       }
 
@@ -206,9 +216,14 @@ export default function SettingsPage() {
   return (
     <div className="container mx-auto py-10 px-4 md:px-8 max-w-5xl">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
-        <div>
-          <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-2">Settings</h1>
-          <p className="text-gray-600 dark:text-gray-400">Manage your Ollama models and configuration</p>
+        <div className="flex items-center gap-4">
+          <Button variant="ghost" size="icon" onClick={() => router.push("/")} className="shrink-0">
+            <ArrowLeft className="w-5 h-5" />
+          </Button>
+          <div>
+            <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-2">Settings</h1>
+            <p className="text-gray-600 dark:text-gray-400">Manage your Ollama models and configuration</p>
+          </div>
         </div>
         <div className="ml-auto flex items-center gap-4">
           <SetupGuide />
@@ -249,6 +264,22 @@ export default function SettingsPage() {
                 ? "Default. The web app server talks to Ollama. Keeps your API keys secure. Requires ngrok for local models."
                 : "Experimental. Your browser talks directly to localhost:11434. No ngrok needed! Requires 'OLLAMA_ORIGINS=\"*\"' setup locally."}
             </p>
+            {connectionMode === 'local' && systemInfo?.status === 'disconnected' && (
+              <div className="bg-amber-50 dark:bg-amber-950/30 p-3 rounded-md border border-amber-200 dark:border-amber-800">
+                <p className="text-xs text-amber-800 dark:text-amber-200 flex gap-2 items-start">
+                  <span>⚠️</span>
+                  <span>
+                    <strong>Connection Failed:</strong> Could not connect to localhost:11434.
+                    <br />
+                    1. Is Ollama running?
+                    <br />
+                    2. Did you run <code>launchctl setenv OLLAMA_ORIGINS "*"</code>?
+                    <br />
+                    3. <strong>Browser Blocking:</strong> Your browser might be blocking "Mixed Content". Try using Chrome or the "Manual (Ngrok)" mode.
+                  </span>
+                </p>
+              </div>
+            )}
           </CardContent>
         </Card>
 

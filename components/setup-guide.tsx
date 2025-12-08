@@ -55,6 +55,15 @@ export function SetupGuide() {
                                 This allows your browser to talk directly to your local Ollama (localhost:11434).
                                 <strong> No ngrok or complex setup needed!</strong>
                             </p>
+                            <div className="bg-amber-50 dark:bg-amber-950/30 p-3 rounded-md border border-amber-200 dark:border-amber-800">
+                                <p className="text-xs text-amber-800 dark:text-amber-200 flex gap-2">
+                                    <span>⚠️</span>
+                                    <span>
+                                        <strong>Browser Blocking:</strong> Since this website is HTTPS, some browsers (like Safari) may block access to "http://localhost".
+                                        If it doesn't work, try using <strong>Chrome</strong> or the "Manual (Ngrok)" method.
+                                    </span>
+                                </p>
+                            </div>
                         </div>
 
                         <div className="space-y-2">
