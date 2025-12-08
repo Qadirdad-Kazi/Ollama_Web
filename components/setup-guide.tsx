@@ -39,10 +39,59 @@ export function SetupGuide() {
                 </DialogHeader>
 
                 <Tabs defaultValue="cli" className="mt-4">
-                    <TabsList className="grid w-full grid-cols-2">
-                        <TabsTrigger value="cli">Automatic (CLI Script)</TabsTrigger>
-                        <TabsTrigger value="manual">Manual Registration</TabsTrigger>
+                    <TabsList className="grid w-full grid-cols-3">
+                        <TabsTrigger value="local">Browser Local</TabsTrigger>
+                        <TabsTrigger value="cli">Automatic (CLI)</TabsTrigger>
+                        <TabsTrigger value="manual">Manual (Ngrok)</TabsTrigger>
                     </TabsList>
+
+                    <TabsContent value="local" className="space-y-4 py-4">
+                        <div className="space-y-2">
+                            <h3 className="font-medium flex items-center gap-2">
+                                <Globe className="w-4 h-4" />
+                                Fastest & Easiest Method
+                            </h3>
+                            <p className="text-sm text-muted-foreground">
+                                This allows your browser to talk directly to your local Ollama (localhost:11434).
+                                <strong> No ngrok or complex setup needed!</strong>
+                            </p>
+                        </div>
+
+                        <div className="space-y-2">
+                            <h3 className="font-medium">Step 1: Allow Browser Access</h3>
+                            <p className="text-sm text-muted-foreground">
+                                Run this command in your terminal to let websites talk to Ollama:
+                            </p>
+                            <div className="bg-slate-950 text-slate-50 p-3 rounded-md font-mono text-sm flex items-center justify-between">
+                                <code>launchctl setenv OLLAMA_ORIGINS "*"</code>
+                                <Button size="icon" variant="ghost" className="h-6 w-6" onClick={() => {
+                                    navigator.clipboard.writeText('launchctl setenv OLLAMA_ORIGINS "*"')
+                                    setCopied(true)
+                                    setTimeout(() => setCopied(false), 2000)
+                                }}>
+                                    {copied ? <Check className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
+                                </Button>
+                            </div>
+                        </div>
+
+                        <div className="space-y-2">
+                            <h3 className="font-medium">Step 2: Restart Ollama</h3>
+                            <ul className="list-disc list-inside text-sm text-muted-foreground space-y-1 ml-2">
+                                <li>Click the Ollama icon in your top menu bar.</li>
+                                <li>Select <strong>Quit Ollama</strong>.</li>
+                                <li>Open Ollama again from your Applications.</li>
+                            </ul>
+                        </div>
+
+                        <div className="space-y-2">
+                            <h3 className="font-medium">Step 3: Enable in Settings</h3>
+                            <ul className="list-disc list-inside text-sm text-muted-foreground space-y-1 ml-2">
+                                <li>Go to the <a href="/settings" className="underline text-primary">Settings page</a> on this website.</li>
+                                <li>Switch <strong>Connection Mode</strong> to <strong>Browser Local</strong>.</li>
+                                <li>Refresh the page!</li>
+                            </ul>
+                        </div>
+                    </TabsContent>
 
                     <TabsContent value="cli" className="space-y-4 py-4">
                         <div className="space-y-2">
