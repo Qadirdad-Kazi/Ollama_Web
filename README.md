@@ -1,242 +1,257 @@
-# AI Chat Application
+<div align="center">
 
-## Introduction
+# Ollama Web
 
-Welcome to the AI Chat Application, a modern, responsive chat interface that allows you to interact with various AI language models powered by Ollama. This application provides a sleek, user-friendly interface for having natural conversations with AI, complete with features like message history, model selection, and a beautiful dark/light theme.
+### A polished web interface for chatting with AI models through Ollama
 
-## 📸 Demo
+Chat privately with locally hosted models—or connect to an Ollama-compatible endpoint you control. Ollama Web combines streaming responses, model management, chat organization, and a responsive light/dark interface in one modern Next.js application.
 
-### Light Theme
-![Light Theme Interface](/Demo%20Images/1.png)
+[![Next.js](https://img.shields.io/badge/Next.js-16-000000?style=for-the-badge&logo=nextdotjs&logoColor=white)](https://nextjs.org/)
+[![React](https://img.shields.io/badge/React-19-149ECA?style=for-the-badge&logo=react&logoColor=white)](https://react.dev/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![Ollama](https://img.shields.io/badge/Powered_by-Ollama-FFFFFF?style=for-the-badge&logo=ollama&logoColor=black)](https://ollama.com/)
 
-### Dark Theme
-![Dark Theme Interface](/Demo%20Images/2.png)
+[**Try the live demo**](https://ollama-web-tau.vercel.app/) · [**Report a bug**](https://github.com/ninjacreativity/Ollama_Web/issues) · [**Request a feature**](https://github.com/ninjacreativity/Ollama_Web/issues)
 
-## ✨ Key Features
+</div>
 
-- 💬 Real-time chat interface with streaming responses
-- 🎨 Beautiful dark/light theme with smooth transitions
-- 🔄 Support for multiple AI models (via Ollama)
-- 📱 Responsive design that works on all devices
-- 📋 Easy model switching and management
-- 📝 Message history and conversation management
-- ⚡ Built with Next.js 13+ and TypeScript
-- 🎨 Styled with Tailwind CSS
-- 🚀 Optimized for performance
+## Preview
 
-## 🛠 Technologies Used
+| Chat workspace | Model settings |
+| --- | --- |
+| ![Ollama Web chat workspace](./Demo%20Images/1.png) | ![Ollama Web model settings](./Demo%20Images/2.png) |
 
-- **Frontend**:
-  - Next.js 13+ (App Router)
-  - TypeScript
-  - React 18+
-  - Tailwind CSS
-  - Framer Motion (for animations)
-  - Radix UI (for accessible components)
-  - Lucide Icons
+## Why Ollama Web?
 
-- **AI Integration**:
-  - Ollama (local AI models)
+Ollama is excellent for running language models on your own hardware. Ollama Web adds the interface around it: a focused chat experience, fast model switching, live response streaming, model controls, connection health, and theme preferences.
 
-- **Development Tools**:
-  - Node.js
-  - npm / yarn
-  - ESLint
-  - Prettier
+Your inference endpoint remains under your control—run the app and Ollama on the same machine, connect through the server, or use the experimental direct-browser mode.
 
-## 📋 Prerequisites
+## Features
 
-Before you begin, ensure you have the following installed:
+- **Streaming conversations** — see responses as Ollama generates them.
+- **Automatic model discovery** — load installed models from your configured Ollama instance.
+- **Fast model switching** — move between available models from the chat header.
+- **Model management** — view model details and pull or delete models from Settings.
+- **Conversation workspace** — create, switch between, and delete chats during the current session.
+- **Two connection modes** — use the Next.js server as a proxy or connect the browser directly to local Ollama.
+- **Connection visibility** — check service status, base URL, and Ollama version.
+- **Adaptive appearance** — light, dark, and system theme support.
+- **Responsive UI** — designed for desktop and smaller screens.
+- **Custom inference support** — includes a Python API example that follows Ollama-compatible endpoints.
 
-- Node.js 18.0.0 or later
-- npm (comes with Node.js) or yarn
-- Ollama installed and running locally
+## Tech Stack
 
-## 🚀 Installation
+| Area | Technology |
+| --- | --- |
+| Framework | Next.js 16 with App Router |
+| UI | React 19, TypeScript, Tailwind CSS |
+| Components | Radix UI, Lucide React |
+| Motion | Framer Motion |
+| AI runtime | Ollama |
+| Optional storage | MongoDB with Mongoose |
 
-1. **Clone the repository**
-   ```bash
-   git clone https://github.com/yourusername/ai-chat-app.git
-   cd ai-chat-app
-   ```
+## Getting Started
 
-2. **Install dependencies**
-   ```bash
-   npm install
-   # or
-   yarn install
-   # or
-   pnpm install
-   ```
+### Prerequisites
 
-3. **Set up environment variables**
-   Create a `.env.local` file in the root directory and add the following:
-   ```env
-   OLLAMA_BASE_URL=http://localhost:11434
-   ```
-   
-   You can also copy the example file:
-   ```bash
-   cp env.example .env.local
-   ```
+Make sure you have:
 
-4. **Make sure Ollama is running**
-   ```bash
-   ollama serve
-   ```
-   
-   Pull a model if you haven't already:
-   ```bash
-   ollama pull llama3.2
-   ```
+- [Node.js](https://nodejs.org/) 20.9 or newer
+- [Ollama](https://ollama.com/download) installed and running
+- At least one Ollama model installed
 
-5. **Start the development server**
-   ```bash
-   npm run dev
-   # or
-   yarn dev
-   ```
+### 1. Clone the repository
 
-6. **Open your browser and navigate to**
-   ```
-   http://localhost:3000
-   ```
-
-## ⚙️ Configuration
-
-### Environment Variables
-
-| Variable | Description | Default |
-|----------|-------------|---------|
-| `OLLAMA_BASE_URL` | Base URL for Ollama API | `http://localhost:11434` |
-
-### Available Scripts
-
-- `npm run dev` - Start the development server
-- `npm run build` - Build the application for production
-- `npm start` - Start the production server
-- `npm run lint` - Run ESLint
-- `npm run format` - Format code with Prettier
-
-## 🎨 Theming
-
-The application supports both light and dark modes with a beautiful futuristic AI-inspired color palette. You can toggle between themes using the settings page.
-
-### Customizing Themes
-
-You can customize the theme colors by modifying the `tailwind.config.ts` file:
-
-```typescript
-// tailwind.config.ts
-theme: {
-  extend: {
-    colors: {
-      // Your custom color palette
-      primary: {
-        DEFAULT: '#8B5CF6',
-        light: '#A78BFA',
-        dark: '#7C3AED',
-      },
-      // ... other theme customizations
-    },
-  },
-}
+```bash
+git clone https://github.com/ninjacreativity/Ollama_Web.git
+cd Ollama_Web
 ```
 
-## 🤖 Available AI Models
+### 2. Install dependencies
 
-The application supports any model that can be run with Ollama. By default, it uses the following models:
+```bash
+npm install
+```
 
-- `llama3.2` - Meta's LLaMA 3.2B parameter model (default)
-- [Add more models as needed]
+If npm reports a peer-dependency conflict, use the same install mode as the included Vercel configuration:
 
-To add a new model:
+```bash
+npm install --legacy-peer-deps
+```
 
-1. Pull the model using Ollama:
-   ```bash
-   ollama pull model-name
-   ```
-2. The model should automatically appear in the model selector dropdown.
+### 3. Configure the environment
 
-## 🔌 API Endpoints
+Copy the example environment file:
 
-### Chat
-- `POST /api/chat` - Send a message to the AI and get a streaming response
-- `GET /api/models` - List all available Ollama models
+```bash
+cp env.example .env.local
+```
 
-## 🔧 Advanced: Custom Local API
+For a standard local setup, `.env.local` only needs:
 
-If you want to use models that are not supported by Ollama directly, or if you want to add custom logic to your model inference, you can set up a custom local API using Python.
+```env
+OLLAMA_BASE_URL=http://localhost:11434
+```
 
-We provide a template for this in `scripts/python-api-example`.
+### 4. Start Ollama and install a model
 
-1. Navigate to the example directory:
-   ```bash
-   cd scripts/python-api-example
-   ```
+```bash
+ollama serve
+```
 
-2. Follow the instructions in the `README.md` there to set up your custom API.
+In another terminal, pull a model if you do not already have one:
 
-3. Point this web app to your custom API by updating `OLLAMA_BASE_URL` in `.env.local`.
+```bash
+ollama pull llama3.2
+```
 
-## 🐛 Troubleshooting
+### 5. Start the application
 
-### Common Issues
+```bash
+npm run dev
+```
 
-1. **Ollama not running**
-   - Ensure Ollama is installed and running
-   - Check that the `OLLAMA_BASE_URL` in your `.env.local` is correct
+Open [http://localhost:3000](http://localhost:3000) and select an installed model.
 
-2. **No models available**
-   - Make sure you've pulled at least one model with Ollama
-   - Try refreshing the page after pulling a new model
+## Connection Modes
 
-3. **Connection issues**
-   - Verify your internet connection
-   - Check if Ollama is running on the correct port (default: 11434)
+Ollama Web includes two ways to reach Ollama. You can switch modes from the Settings page.
 
-## 🚀 Deployment
+| Mode | How it works | Best for |
+| --- | --- | --- |
+| **Server** | The browser calls `/api/chat`, and the Next.js server forwards requests to `OLLAMA_BASE_URL`. | Default local development and hosted Ollama endpoints |
+| **Local (experimental)** | The browser calls `http://localhost:11434` directly. | Using a deployed UI with Ollama running on the same computer as the browser |
 
-This application is ready to deploy on Vercel (recommended for Next.js apps).
+Direct-browser mode requires Ollama to accept requests from the web app's origin. Review your Ollama origin settings carefully and avoid broad origin access on untrusted networks.
 
-### Quick Deploy to Vercel
+## Environment Variables
 
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/yourusername/ai-chat-app)
+| Variable | Required | Default | Purpose |
+| --- | --- | --- | --- |
+| `OLLAMA_BASE_URL` | No | `http://localhost:11434` | Ollama or Ollama-compatible API used by the Next.js server |
+| `OLLAMA_API_KEY` | No | — | Bearer key for a protected inference endpoint and optional registration protection |
+| `MONGODB_URI` | Only for registered remote models | — | MongoDB connection used by the remote-model registration flow |
 
-### Manual Deployment
+Keep secrets in `.env.local`; never commit that file.
 
-For detailed deployment instructions including how to set up a hosted Ollama instance, see [DEPLOYMENT.md](./DEPLOYMENT.md)
+## Available Scripts
 
-**Quick Steps:**
-1. Push your code to GitHub
-2. Import to Vercel at [vercel.com/new](https://vercel.com/new)
-3. Add environment variable: `OLLAMA_BASE_URL` (your hosted Ollama URL)
-4. Deploy!
+| Command | Description |
+| --- | --- |
+| `npm run dev` | Start the development server with Turbopack |
+| `npm run build` | Create a production build |
+| `npm start` | Run the production server |
+| `npm run lint` | Run the configured Next.js lint command |
 
-**Important:** You'll need a hosted Ollama instance for production. See [DEPLOYMENT.md](./DEPLOYMENT.md) for setup instructions.
+## API Routes
 
-## 🤝 Contributing
+| Method | Route | Purpose |
+| --- | --- | --- |
+| `POST` | `/api/chat` | Forward a chat request and stream the generated response |
+| `GET` | `/api/models` | List available models and Ollama system information |
+| `POST` | `/api/models/pull` | Pull a model through Ollama |
+| `POST` | `/api/models/delete` | Delete an installed model |
+| `GET` | `/api/health` | Check whether the configured Ollama service is available |
+| `POST` | `/api/models/register` | Register models exposed by another Ollama-compatible host |
 
-Contributions are welcome! Please feel free to submit a Pull Request.
+## Custom Python API
 
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
+The repository includes a small FastAPI example for connecting a custom inference backend that exposes Ollama-compatible routes:
 
-## 📄 License
+```bash
+cd scripts/python-api-example
+python -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+uvicorn main:app --reload --port 8000
+```
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+Then point the web app to it:
 
-## 🙏 Acknowledgments
+```env
+OLLAMA_BASE_URL=http://localhost:8000
+```
 
-- [Next.js](https://nextjs.org/)
-- [Ollama](https://ollama.ai/)
-- [Tailwind CSS](https://tailwindcss.com/)
-- [Radix UI](https://www.radix-ui.com/)
-- [Framer Motion](https://www.framer.com/motion/)
+See [`scripts/python-api-example/README.md`](./scripts/python-api-example/README.md) for the full example.
 
----
+## Troubleshooting
 
-Made with ❤️ by [Qadirdad-Kazi]
+### No models appear
+
+Confirm Ollama is running and that at least one model is installed:
+
+```bash
+ollama list
+ollama pull llama3.2
+```
+
+### The app cannot reach Ollama
+
+Check the configured endpoint directly:
+
+```bash
+curl http://localhost:11434/api/tags
+```
+
+If that request fails, start Ollama with `ollama serve` and verify `OLLAMA_BASE_URL`.
+
+### A deployed app cannot reach local Ollama
+
+`localhost` on a cloud deployment refers to the cloud host, not your computer. Use an accessible, protected Ollama endpoint or switch the app to local browser mode.
+
+### Direct-browser mode is blocked
+
+The browser enforces cross-origin rules. Configure Ollama to allow the exact origin of your web app, then restart Ollama. Avoid wildcard origins outside a trusted development environment.
+
+## Project Structure
+
+```text
+Ollama_Web/
+├── app/                  # Pages and API route handlers
+│   ├── api/              # Chat, model, and health endpoints
+│   ├── models/           # Model overview page
+│   └── settings/         # Connection, appearance, and model settings
+├── components/           # Application and reusable UI components
+├── hooks/                # Chat, responsive, and Ollama-mode hooks
+├── lib/                  # Database, storage, and Ollama helpers
+├── public/               # Static assets and registration utility
+├── scripts/              # Supporting documentation and Python API example
+└── Demo Images/          # Repository screenshots
+```
+
+## Deployment
+
+The project includes configuration for both Vercel and Netlify.
+
+Use Node.js 20.9 or newer in the deployment environment. If using Netlify, update any older Node runtime value in `netlify.toml` before building.
+
+Before deploying, remember that `localhost:11434` on a cloud host does **not** point to Ollama on your personal computer. Your deployment must either:
+
+- reach an Ollama instance running on an accessible server;
+- run beside Ollama on the same host or private network; or
+- use local browser mode to connect to Ollama on the visitor's computer.
+
+For remote access, protect the Ollama-compatible endpoint, use HTTPS, and configure `OLLAMA_API_KEY` when the endpoint supports bearer authentication.
+
+## Contributing
+
+Contributions and suggestions are welcome.
+
+1. Fork the repository.
+2. Create a branch: `git checkout -b feature/your-feature`.
+3. Commit your work: `git commit -m "Add your feature"`.
+4. Push the branch: `git push origin feature/your-feature`.
+5. Open a pull request describing the change and how you tested it.
+
+## Acknowledgements
+
+Built with [Ollama](https://ollama.com/), [Next.js](https://nextjs.org/), [Tailwind CSS](https://tailwindcss.com/), [Radix UI](https://www.radix-ui.com/), and [Framer Motion](https://www.framer.com/motion/).
+
+<div align="center">
+
+Built by [Qadirdad Kazi](https://github.com/Qadirdad-Kazi) · Maintained by [Ninja Creativity](https://github.com/ninjacreativity)
+
+If Ollama Web helps you, consider giving the repository a ⭐
+
+</div>
