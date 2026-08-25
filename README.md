@@ -17,7 +17,7 @@ Chat privately with locally hosted models—or connect to an Ollama-compatible e
 
 ## Preview
 
-| Chat workspace | Model settings |
+| Chat Workspace | Model Settings |
 | --- | --- |
 | ![Ollama Web chat workspace](./Demo%20Images/1.png) | ![Ollama Web model settings](./Demo%20Images/2.png) |
 
