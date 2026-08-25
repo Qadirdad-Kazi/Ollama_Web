@@ -11,7 +11,7 @@ Chat privately with locally hosted models—or connect to an Ollama-compatible e
 [![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![Ollama](https://img.shields.io/badge/Powered_by-Ollama-FFFFFF?style=for-the-badge&logo=ollama&logoColor=black)](https://ollama.com/)
 
-[**Try the live demo**](https://ollama-web-tau.vercel.app/) · [**Report a bug**](https://github.com/ninjacreativity/Ollama_Web/issues) · [**Request a feature**](https://github.com/ninjacreativity/Ollama_Web/issues)
+[**Try Live Demo**](https://ollama-web-tau.vercel.app/) · [**Report a Bug**](https://github.com/ninjacreativity/Ollama_Web/issues) · [**Request a Feature**](https://github.com/ninjacreativity/Ollama_Web/issues)
 
 </div>
 
